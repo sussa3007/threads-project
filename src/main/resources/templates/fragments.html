@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.5/dist/flowbite.min.css" />
+    <title>fragments</title>
+</head>
+<body class="max-w-xxl mx-auto px-4 bg-gray-700 ">
+<div th:fragment="nav">
+    <nav class="bg-gray-300 border-gray-200 dark:bg-gray-900">
+        <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xxl px-4 md:px-6 py-2.5">
+            <a th:href="@{/}" class="flex items-center" style="margin-left: 2em">
+                <img src="/nuri.jpg"
+                     class="h-6 mr-3 sm:h-9 rounded-full" alt="Flowbite Logo" />
+                <span
+                        class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">심심한 개주인</span>
+            </a>
+            <div class="flex items-center" style="margin-right: 2em" >
+
+                <button type="button"
+                        style="margin-left: 1em"
+                        class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        onclick="location.href='https://www.threads.net/@su_.cogi'"
+                >
+<!--                    class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"-->
+                    @su_.cogi
+                </button>
+
+            </div>
+        </div>
+    </nav>
+</div>
+</body>
+</html>
