@@ -20,3 +20,12 @@
 ### 개발 기간
 
 - 2023.07.23 ~ 2023.07.28 
+
+
+### Update Log
+
+- Username 대문자 입력시 Ranking 본인 등판 문제 해결
+
+![img_2.png](img_2.png)
+
+![img_1.png](img_1.png)
