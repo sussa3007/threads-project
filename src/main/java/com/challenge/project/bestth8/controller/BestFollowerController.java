@@ -69,7 +69,7 @@ public class BestFollowerController {
             @RequestParam Map<String, Object> param
     ) {
         String username = (String) param.get("username");
-        List<UserResponseDto> rankingFollower = service.getRankingFollower(username);
+        List<UserResponseDto> rankingFollower = service.getRankingFollower(username.toLowerCase().replaceAll(" ", ""));
         List<UserResponseDto> list = fileService.imageLocalDownloader(rankingFollower);
         Long count = dataService.getCountingData();
         String info = service.setUserTagGap(list);
