@@ -6,6 +6,7 @@ import com.challenge.project.constants.ErrorCode;
 import com.challenge.project.constants.ThreadsRequestProperty;
 import com.challenge.project.exception.ServiceLogicException;
 import com.challenge.project.http.dto.*;
+import com.challenge.project.http.handler.HttpResponseHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.gson.Gson;
@@ -15,17 +16,13 @@ import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Consts;
-import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -48,15 +45,11 @@ import java.util.regex.Pattern;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class HttpService {
+public class ThreadsRankingService {
 
-    private final String BASE_URL = ThreadsRequestProperty.BASE_URL.getId();
-    private final String INSTA_URL = ThreadsRequestProperty.INSTA_URL.getId();
+    private final HttpResponseHandler handler;
 
-    private final String USER_ID_GET_URL_RAPID = ThreadsRequestProperty.USER_ID_GET_URL_RAPID.getId();
-    private final String USER_ID_GET_INSTAGRAM_URL = ThreadsRequestProperty.USER_ID_GET_INSTAGRAM_URL.getId();
-
-    // /"LSD",[],{"token":"([^"]+)"}/
+    private final HeaderService headerService;
 
     @Value("${RAPID_API_KEY}")
     private String RAPID_API_KEY;
@@ -64,22 +57,17 @@ public class HttpService {
     @Value("${INSTAGRAM_COOKIE}")
     private String INSTAGRAM_COOKIE;
 
-    private final ObjectMapper mapper = new ObjectMapper();
-
     private final Gson gson = new Gson();
 
     public List<String> getThreadsIdList(String username) throws IOException, InterruptedException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             String userId = findUserIdByUserName(username);
             String token = getLsdToken();
-            HttpPost httpPost = new HttpPost(BASE_URL);
-            httpPost.setHeader("user-agent", "threads-client");
-            httpPost.setHeader("x-ig-app-id", ThreadsRequestProperty.X_IG_APP_ID.getId());
-            httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
-            httpPost.setHeader("x-fb-lsd", token);
+            HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
+            headerService.setThreadsRequestDefaultHeader(httpPost, token);
             UrlEncodedFormEntity entity = getUrlEncodedBody("userID", userId, token, DocId.GET_PROFILE_POST.getId());
             httpPost.setEntity(entity);
-            HttpClientPostDto execute = (HttpClientPostDto) httpclient.execute(httpPost, getResponseHandler());
+            HttpClientPostDto execute = (HttpClientPostDto) httpclient.execute(httpPost, handler.getThreadsRankingResponseHandler());
             log.info("Executing request = {} ", httpPost.getRequestLine());
             return parsingThreadsIdList(execute);
 
@@ -98,16 +86,13 @@ public class HttpService {
             List<FindUserDto> userList = new ArrayList<>();
             // 병렬 스트림 처리
             postList.stream().parallel().forEach( postId -> {
-                HttpPost httpPost = new HttpPost(BASE_URL);
-                httpPost.setHeader("user-agent", "threads-client");
-                httpPost.setHeader("x-ig-app-id", ThreadsRequestProperty.X_IG_APP_ID.getId());
-                httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
-                httpPost.setHeader("x-fb-lsd", token);
+                HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
+                headerService.setThreadsRequestDefaultHeader(httpPost, token);
                 UrlEncodedFormEntity entity = getUrlEncodedBody("postID", postId, token, DocId.GET_POST.getId());
                 httpPost.setEntity(entity);
                 HttpClientPostDto execute = null;
                 try {
-                    execute = (HttpClientPostDto) httpclient.execute(httpPost, getResponseHandler());
+                    execute = (HttpClientPostDto) httpclient.execute(httpPost, handler.getThreadsRankingResponseHandler());
                 } catch (IOException e) {
                     log.error("Error Not Found Post = {}", e.getMessage());
                     throw new ServiceLogicException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -169,7 +154,6 @@ public class HttpService {
     }
 
 
-
     private UrlEncodedFormEntity getUrlEncodedBody(String varKey, String userId, String token, String doc_id) {
         List<NameValuePair> form = new ArrayList<>();
         form.add(new BasicNameValuePair("variables", "{\"" + varKey + "\": \"" + userId + "\"}"));
@@ -182,13 +166,13 @@ public class HttpService {
         try {
             HttpClient clientFwd = HttpClient.newHttpClient();
             HttpRequest get = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL))
+                    .uri(URI.create(ThreadsRequestProperty.BASE_URL.getProperty()))
                     //GET, POST, PUT,..
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .header("user-agent", "threads-client")
-                    .header("x-ig-app-id", ThreadsRequestProperty.X_IG_APP_ID.getId())
+                    .header("x-ig-app-id", ThreadsRequestProperty.X_IG_APP_ID.getProperty())
                     .header("content-type", "application/x-www-form-urlencoded")
-                    .header("x-fb-lsd", ThreadsRequestProperty.DEFAULT_LSD_TOKEN.getId())
+                    .header("x-fb-lsd", ThreadsRequestProperty.DEFAULT_LSD_TOKEN.getProperty())
                     .build();
             HttpResponse<String> send = clientFwd.send(get, HttpResponse.BodyHandlers.ofString());
             int findIndex = send.body().indexOf("\"LSD\",[],{\"token\"");
@@ -198,7 +182,7 @@ public class HttpService {
         } catch (Exception e) {
             log.error("Error LSD Token Parsing = {}", e.getMessage());
             log.error("Return Default LSD Token");
-            return ThreadsRequestProperty.DEFAULT_LSD_TOKEN.getId();
+            return ThreadsRequestProperty.DEFAULT_LSD_TOKEN.getProperty();
         }
 
     }
@@ -209,7 +193,7 @@ public class HttpService {
             String pageContents = "";
             StringBuilder contents = new StringBuilder();
 
-            URL url = new URL(INSTA_URL+username);
+            URL url = new URL(ThreadsRequestProperty.INSTA_URL.getProperty()+username);
             URLConnection con = (URLConnection)url.openConnection();
             InputStreamReader reader = new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8);
 
@@ -242,10 +226,9 @@ public class HttpService {
     private UserDto getUserIdByRapidApi(String username) throws IOException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             log.info("Call getUserIdByRapidApi");
-            HttpGet httpGet = new HttpGet(USER_ID_GET_URL_RAPID + username);
-            httpGet.setHeader("X-RapidAPI-Host", "threads-by-instagram-fast.p.rapidapi.com");
-            httpGet.setHeader("X-RapidAPI-Key", RAPID_API_KEY);
-            HttpClientUsersDto execute = (HttpClientUsersDto) httpclient.execute(httpGet, getResponseHandler());
+            HttpGet httpGet = new HttpGet(ThreadsRequestProperty.USER_ID_GET_URL_RAPID.getProperty() + username);
+            headerService.setRapidApiDefaultHeader(httpGet, RAPID_API_KEY);
+            HttpClientUsersDto execute = (HttpClientUsersDto) httpclient.execute(httpGet, handler.getThreadsRankingResponseHandler());
             log.info("Executing request RapidAPI = {} ", httpGet.getRequestLine());
             log.info("UserID Called RapidAPI = {}",execute.getUserId());
             return UserDto.of(execute);
@@ -260,10 +243,9 @@ public class HttpService {
     private String getUserIdByInstagramApi(String username) throws IOException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             log.info("Call getUserIdByInstagramApi");
-            HttpGet httpGet = new HttpGet(USER_ID_GET_INSTAGRAM_URL + username);
-            httpGet.setHeader("x-ig-app-id", ThreadsRequestProperty.INSTAGRAM_API_APP_ID.getId());
-            httpGet.setHeader("Cookie", INSTAGRAM_COOKIE);
-            InstagramResponseDto execute = (InstagramResponseDto) httpclient.execute(httpGet, getResponseHandler());
+            HttpGet httpGet = new HttpGet(ThreadsRequestProperty.USER_ID_GET_INSTAGRAM_URL.getProperty() + username);
+            headerService.setUserIdByInstagramApiHeader(httpGet, INSTAGRAM_COOKIE);
+            InstagramResponseDto execute = (InstagramResponseDto) httpclient.execute(httpGet, handler.getThreadsRankingResponseHandler());
             log.info("Executing request InstagramAPI = {} ", httpGet.getRequestLine());
             if (execute.getStatus().equals("ok")) {
                 JsonElement jsonElement = JsonParser.parseString(gson.toJson(execute.getData()));
@@ -294,41 +276,4 @@ public class HttpService {
     }
 
 
-
-    private ResponseHandler<?> getResponseHandler() {
-        return response -> {
-            int status = response.getStatusLine().getStatusCode();
-            if (status >= 200 && status < 300) {
-                HttpEntity responseBody = response.getEntity();
-                //Todo : response를 한번 이상 파싱하면 예외 발생
-                String res = EntityUtils.toString(responseBody);
-                if (res.contains("userId")) {
-                    log.info("Return = {}", "HttpClientUserDto");
-                    return mapper.readValue(
-                            res,
-                            HttpClientUsersDto.class);
-                } else if (res.contains("extensions")) {
-                    log.info("Return = {}", "HttpClientPostDto");
-                    return mapper.readValue(
-                            res,
-                            HttpClientPostDto.class
-                    );
-                } else {
-                    log.info("Return = {}", "InstagramResponseDto");
-                    return mapper.readValue(
-                            res,
-                            InstagramResponseDto.class
-                    );
-                }
-
-            } else {
-                if (status == 404) {
-                    throw new ServiceLogicException(ErrorCode.NOT_FOUND);
-                } else {
-                    throw new ClientProtocolException("Unexpected response status: " + status);
-
-                }
-            }
-        };
-    }
 }
