@@ -1,4 +1,4 @@
-package com.challenge.project.bestth8.dto;
+package com.challenge.project.threadsbestfollower.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,32 +1,31 @@
-package com.challenge.project.bestth8.service;
+package com.challenge.project.threadsbestfollower.service;
 
 
-import com.challenge.project.bestth8.dto.UserResponseDto;
+import com.challenge.project.threadsbestfollower.dto.UserResponseDto;
 import com.challenge.project.constants.ErrorCode;
 import com.challenge.project.exception.ServiceLogicException;
 import com.challenge.project.generatedata.service.GenerateDataService;
 import com.challenge.project.http.dto.FindUserDto;
-import com.challenge.project.http.service.HttpService;
+import com.challenge.project.http.service.ThreadsRankingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BestFollowerService {
+public class ThreadsBestFollowerService {
 
-    private final HttpService httpService;
+    private final ThreadsRankingService threadsRankingService;
 
     private final GenerateDataService dataService;
 
     public List<UserResponseDto> getRankingFollower(String username) {
         try {
-            List<String> threadsIdList = httpService.getThreadsIdList(username);
-            List<FindUserDto> replyUser = httpService.getReplyUser(threadsIdList, username);
+            List<String> threadsIdList = threadsRankingService.getThreadsIdList(username);
+            List<FindUserDto> replyUser = threadsRankingService.getReplyUser(threadsIdList, username);
 
             List<String> userNameList = replyUser.stream().map(FindUserDto::getUsername).toList();
             Set<String> userNameSet = new HashSet<>(userNameList);

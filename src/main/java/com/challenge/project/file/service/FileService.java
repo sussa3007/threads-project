@@ -1,6 +1,6 @@
 package com.challenge.project.file.service;
 
-import com.challenge.project.bestth8.dto.UserResponseDto;
+import com.challenge.project.threadsbestfollower.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

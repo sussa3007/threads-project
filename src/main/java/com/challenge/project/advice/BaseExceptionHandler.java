@@ -1,7 +1,7 @@
 package com.challenge.project.advice;
 
 
-import com.challenge.project.bestth8.dto.CreateForm;
+import com.challenge.project.threadsbestfollower.dto.CreateForm;
 import com.challenge.project.constants.ErrorCode;
 import com.challenge.project.exception.CustomBindException;
 import com.challenge.project.exception.ServiceLogicException;

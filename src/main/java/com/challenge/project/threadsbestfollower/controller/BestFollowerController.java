@@ -1,13 +1,11 @@
-package com.challenge.project.bestth8.controller;
+package com.challenge.project.threadsbestfollower.controller;
 
-import com.challenge.project.bestth8.dto.CreateForm;
-import com.challenge.project.bestth8.dto.CreateViewResponseDto;
-import com.challenge.project.bestth8.dto.UserRequestDto;
-import com.challenge.project.bestth8.dto.UserResponseDto;
-import com.challenge.project.bestth8.service.BestFollowerService;
-import com.challenge.project.constants.ErrorCode;
+import com.challenge.project.threadsbestfollower.dto.CreateForm;
+import com.challenge.project.threadsbestfollower.dto.CreateViewResponseDto;
+import com.challenge.project.threadsbestfollower.dto.UserRequestDto;
+import com.challenge.project.threadsbestfollower.dto.UserResponseDto;
+import com.challenge.project.threadsbestfollower.service.ThreadsBestFollowerService;
 import com.challenge.project.exception.CustomBindException;
-import com.challenge.project.exception.ServiceLogicException;
 import com.challenge.project.file.service.FileService;
 import com.challenge.project.generatedata.service.GenerateDataService;
 import jakarta.validation.Valid;
@@ -15,12 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BestFollowerController {
 
-    private final BestFollowerService service;
+    private final ThreadsBestFollowerService service;
 
     private final FileService fileService;
 

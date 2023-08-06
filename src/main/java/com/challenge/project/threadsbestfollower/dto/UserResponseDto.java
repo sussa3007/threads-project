@@ -1,6 +1,5 @@
-package com.challenge.project.bestth8.dto;
+package com.challenge.project.threadsbestfollower.dto;
 
-import com.challenge.project.http.dto.FindUserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
