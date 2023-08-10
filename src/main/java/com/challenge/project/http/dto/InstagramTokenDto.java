@@ -14,4 +14,6 @@ public class InstagramTokenDto {
     private String token;
 
     private String userId;
+
+    private String maxId;
 }
