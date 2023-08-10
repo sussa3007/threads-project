@@ -46,6 +46,24 @@ public class HttpResponseHandler {
         };
     }
 
+    public ResponseHandler<?> getThreadsFollowerHandler() {
+        return response -> {
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                HttpEntity responseBody = response.getEntity();
+                //Todo : response를 한번 이상 파싱하면 예외 발생
+                return EntityUtils.toString(responseBody);
+            } else {
+                if (status == 404) {
+                    throw new ServiceLogicException(ErrorCode.NOT_FOUND);
+                } else {
+                    throw new ClientProtocolException("Unexpected response status: " + status);
+
+                }
+            }
+        };
+    }
+
     public ResponseHandler<?> getThreadsRankingResponseHandler() {
         return response -> {
             int status = response.getStatusLine().getStatusCode();
