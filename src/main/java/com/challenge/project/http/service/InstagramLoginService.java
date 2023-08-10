@@ -75,13 +75,13 @@ public class InstagramLoginService {
                     .getAsJsonObject()
                     .get("IG-Set-Authorization")
                     .getAsString();
-
+            log.info(" [TOKEN] = {}",token);
             return InstagramTokenDto.builder()
                     .userId(userId)
                     .token(token)
                     .build();
         } else {
-            throw new ServiceLogicException(ErrorCode.BAD_REQUEST);
+            throw new ServiceLogicException(ErrorCode.ACCESS_DENIED_USER);
         }
     }
 
