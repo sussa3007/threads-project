@@ -24,13 +24,11 @@ class ThreadsFollowerServiceTest {
 
         String username = "";
         String password = "";
-        InstagramTokenDto allFollower = service.findAllFollower(username, password);
         try {
-            List<FollowerResponseDto> follower = service.findFollower(username, password, allFollower);
+            List<FollowerResponseDto> follower = service.findAllFollower(username, password);
             System.out.println(follower.size());
         } catch (Exception e) {
             e.printStackTrace();
-
         }
         //When
 

@@ -13,7 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Service;
 
-import java.net.http.HttpResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,12 +34,16 @@ public class ThreadsFollowerService {
 
 
     // Todo 임시로 토큰 반환
-    public InstagramTokenDto findAllFollower(String username, String password) {
+    public List<FollowerResponseDto> findAllFollower(String username, String password) throws Exception {
         InstagramTokenDto tokenDto = loginService.requestLogin(username, password);
-        return tokenDto;
+        return findFollower(username, password, tokenDto);
     }
 
-    public List<FollowerResponseDto> findFollower(String username, String password, InstagramTokenDto tokenDto) {
+    private List<FollowerResponseDto> findFollower(
+            String username,
+            String password,
+            InstagramTokenDto tokenDto
+    ) throws Exception {
         List<FollowerResponseDto> list = new ArrayList<>();
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             log.info("Call Request Threads Followers");
@@ -53,27 +57,23 @@ public class ThreadsFollowerService {
             headerService.setThreadsFollowerRequestHeader(httpGet, tokenDto.getToken());
             log.info("Executing request InstagramAPI = {} ", httpGet.getRequestLine());
             String execute = (String) httpclient.execute(httpGet, handler.getThreadsFollowerHandler());
+            ThreadsFollowersResponseDto threadsFollowersResponseDto = mapper.readValue(execute, ThreadsFollowersResponseDto.class);
             if (execute.contains("next_max_id")) {
-                ThreadsFollowersResponseDto threadsFollowersResponseDto = mapper.readValue(execute, ThreadsFollowersResponseDto.class);
-                System.out.println(tokenDto.getUserId());
-                System.out.println(threadsFollowersResponseDto.getStatus());
+                log.info("Followers Request Status = {}",threadsFollowersResponseDto.getStatus());
                 tokenDto.setMaxId(threadsFollowersResponseDto.getNextMaxId());
                 list.addAll(threadsFollowersResponseDto.getUsers());
-                System.out.println("SIZE >> " + threadsFollowersResponseDto.getUsers().size());
+                log.info("Followers Request Size = {}",threadsFollowersResponseDto.getUsers().size());
                 list.addAll(findFollower(username, password, tokenDto));
-                return list;
             } else {
-                ThreadsFollowersResponseDto threadsFollowersResponseDto = mapper.readValue(execute, ThreadsFollowersResponseDto.class);
-                System.out.println(tokenDto.getUserId());
-                System.out.println(threadsFollowersResponseDto.getStatus());
+                log.info("Last Followers Request Status = {}",threadsFollowersResponseDto.getStatus());
                 list.addAll(threadsFollowersResponseDto.getUsers());
-                System.out.println("LAST SIZE >> "+list.size());
-                return list;
+                log.info("Last Followers Request Size = {}",list.size());
             }
+            return list;
 
         } catch (Exception e) {
             log.error("Error = {}", e.getMessage());
-            return null;
+            throw e;
         }
     }
 }

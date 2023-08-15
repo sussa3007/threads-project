@@ -21,6 +21,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -38,7 +39,7 @@ public class InstagramLoginService {
 
     private final Gson gson = new Gson();
 
-    public InstagramTokenDto requestLogin(String username, String password) {
+    public InstagramTokenDto requestLogin(String username, String password) throws Exception {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             String encryptPassword = passwordEncodingService.getEncryptPassword(password);
             UrlEncodedFormEntity entity = makeRequestLoginPostEntity(encryptPassword, username);
@@ -50,7 +51,7 @@ public class InstagramLoginService {
             return getToken((String) httpclient.execute(httpPost, handler.getInstagramApiResponseHandler()));
         } catch (Exception e) {
             log.error("Error = {}", e.getMessage());
-            return null;
+            throw e;
         }
     }
 
