@@ -1,13 +1,13 @@
 package com.challenge.project.api.controller;
 
 import com.challenge.project.file.service.AwsService;
+import com.challenge.project.http.service.InstagramLoginService;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.catalina.loader.ResourceEntry;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -16,6 +16,8 @@ public class BestTh8ApiController {
 
     private final AwsService awsService;
 
+    private final InstagramLoginService loginService;
+
     @DeleteMapping("/image")
     public ResponseEntity<?> delete() {
 
@@ -23,5 +25,12 @@ public class BestTh8ApiController {
 
     }
 
+    @GetMapping("/instagram/login")
+    public ResponseEntity getLogin(
+            @RequestParam("u") String username,
+            @RequestParam("p") String password
 
+    ) throws Exception {
+        return ResponseEntity.ok(loginService.requestLogin(username, password));
+    }
 }
