@@ -32,7 +32,7 @@
 
             <input type="hidden" id="csrf">
             <h2 class="text-2xl font-bold leading-7 text-gray-300 sm:text-3xl sm:truncate text-center">
-                <span id="infoTitle" class="whitespace-normal ">쓰레드가 차단함,, 찾아서 다시 올게</span>
+                <span id="infoTitle" class="whitespace-normal ">내 피드 24개 쓰레드 기준 소통왕 찾아줌</span>
             </h2>
             <div th:replace="~{form_error :: formErrorsFragment}"></div>
             <div class="mb-4 mt-7 flex ">
@@ -53,8 +53,8 @@
             <div class="flex flex-wrap justify-center">
             <input id="submit" type="submit" value="눌러"
                     th:form="createForm"
-                    th:formaction="@{/}"
-                    th:formmethod="get"
+                    th:formaction="@{/loading}"
+                    th:formmethod="post"
                     class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
 <!--                    class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">-->
             </div>

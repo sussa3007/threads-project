@@ -37,7 +37,7 @@ public class BestFollowerController {
         Long count = dataService.getCountingData();
 
         model.addAttribute("createForm", new CreateForm());
-        model.addAttribute("countMessage", "지금까지 " + count + "명. 비공개 프로필 외않되? 하지마");
+        model.addAttribute("countMessage", "지금까지 " + count + "명. 비공개 프로필 외않되? 하지마, 가끔 쓰레드 쪽의 차단으로 안될 때도 있어");
         return "index";
     }
 
