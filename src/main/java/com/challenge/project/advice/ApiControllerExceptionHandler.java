@@ -1,91 +1,63 @@
 package com.challenge.project.advice;
 
 
-import com.challenge.project.api.controller.BestFollowerApiController;
 import com.challenge.project.constants.ErrorCode;
 import com.challenge.project.exception.ServiceLogicException;
 import com.challenge.project.exception.dto.ErrorResponse;
-import jakarta.validation.ConstraintViolationException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Slf4j
-@RestControllerAdvice(assignableTypes = {BestFollowerApiController.class})
-public class ApiControllerExceptionHandler {
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse methodArgumentNotValidHandle(
-            MethodArgumentNotValidException e
-    ) {
-        return ErrorResponse.of(e.getBindingResult());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse methodArgumentTypeMismatchHandle(
-            MethodArgumentTypeMismatchException e
-    ) {
-        return ErrorResponse.of(ErrorCode.ARGUMENT_MISMATCH_BAD_REQUEST);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse constraintViolationExceptionHandler(
-            ConstraintViolationException e
-    ) {
-        return ErrorResponse.of(e.getConstraintViolations());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    public ErrorResponse httpRequestMethodNotSupportedExceptionHandler(
-            HttpRequestMethodNotSupportedException e
-    ) {
-        return ErrorResponse.of(HttpStatus.METHOD_NOT_ALLOWED);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse httpMessageNotReadableExceptionHandler(
-            HttpMessageNotReadableException e
-    ) {
-        return ErrorResponse.of(HttpStatus.BAD_REQUEST, e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse missingServletRequestParameterExceptionHandler(
-            MissingServletRequestParameterException e
-    ) {
-        return ErrorResponse.of(HttpStatus.BAD_REQUEST, e.getMessage());
-    }
+@RestControllerAdvice(annotations = {RestController.class})
+public class ApiControllerExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse exceptionHandler(Exception e) {
+    public ResponseEntity<Object> exceptionHandler(
+            Exception e,
+            WebRequest request
+    ) {
         e.printStackTrace();
-        return ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
+        return handleExceptionInternal(e, ErrorCode.INTERNAL_SERVER_ERROR, request);
     }
 
     @ExceptionHandler
-    public ResponseEntity serviceLogicExceptionHandler(
-            ServiceLogicException e
+    public ResponseEntity<Object> serviceLogicExceptionHandler(
+            ServiceLogicException e,
+            WebRequest request
     ) {
         if (e.getErrorCode().getStatusCode() == 500) {
             e.printStackTrace();
         }
-        return new ResponseEntity<>(
-                ErrorResponse.of(e.getErrorCode()),
-                HttpStatus.valueOf(e.getErrorCode().getStatusCode()));
+        return handleExceptionInternal(e, e.getErrorCode(), request);
+    }
+
+    private ResponseEntity<Object> handleExceptionInternal(Exception e, ErrorCode errorCode, WebRequest request) {
+        return handleExceptionInternal(e, errorCode, HttpHeaders.EMPTY, HttpStatus.valueOf(errorCode.getStatusCode()), request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception ex, Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request
+    ) {
+        return handleExceptionInternal(ex, ErrorCode.valueOf(statusCode.toString()), headers, statusCode, request);
+    }
+
+    private ResponseEntity<Object> handleExceptionInternal(
+            Exception e, ErrorCode errorCode, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        return super.handleExceptionInternal(
+                e,
+                ErrorResponse.of(errorCode),
+                headers,
+                status,
+                request
+        );
     }
 }
