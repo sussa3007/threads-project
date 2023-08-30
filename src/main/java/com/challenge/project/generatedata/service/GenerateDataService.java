@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,11 +23,13 @@ public class GenerateDataService {
 
     private final CountingRepository countingRepository;
 
-    public GenerateData createGenerateData(String username, String info) {
-        return generateDataRepository.save(GenerateData.builder()
+    public LocalDateTime createGenerateData(String username, String info) {
+        GenerateData save = generateDataRepository.save(GenerateData.builder()
                 .username(username)
                 .userRankingString(info)
+                .createAt(LocalDateTime.now())
                 .build());
+        return save.getCreateAt();
     }
 
     public Long getCountingData() {
