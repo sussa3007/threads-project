@@ -1,20 +1,23 @@
 package com.challenge.project.advice;
 
 
-import com.challenge.project.threadsbestfollower.dto.CreateForm;
 import com.challenge.project.constants.ErrorCode;
 import com.challenge.project.exception.CustomBindException;
 import com.challenge.project.exception.ServiceLogicException;
+import com.challenge.project.threadsbestfollower.controller.BestFollowerController;
+import com.challenge.project.threadsbestfollower.dto.CreateForm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Map;
 
-@ControllerAdvice
+@ControllerAdvice(assignableTypes = {BestFollowerController.class})
 @Slf4j
 public class BaseExceptionHandler {
 

@@ -1,20 +1,17 @@
 package com.challenge.project.api.controller;
 
+import com.challenge.project.constants.ErrorCode;
 import com.challenge.project.dto.RankingResponseDto;
 import com.challenge.project.dto.ResponseDto;
 import com.challenge.project.dto.Result;
+import com.challenge.project.exception.ServiceLogicException;
 import com.challenge.project.file.service.AwsService;
 import com.challenge.project.file.service.FileService;
-import com.challenge.project.generatedata.entity.GenerateData;
 import com.challenge.project.generatedata.service.GenerateDataService;
 import com.challenge.project.http.service.InstagramLoginService;
-import com.challenge.project.threadsbestfollower.dto.CreateViewResponseDto;
 import com.challenge.project.threadsbestfollower.dto.UserResponseDto;
 import com.challenge.project.threadsbestfollower.service.ThreadsBestFollowerService;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.apache.catalina.loader.ResourceEntry;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +21,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api")
-public class BestTh8ApiController {
+public class BestFollowerApiController {
 
     private final AwsService awsService;
 
@@ -64,7 +61,7 @@ public class BestTh8ApiController {
                 .counting(count)
                 .createAt(generateData)
                 .build();
-
         return ResponseEntity.ok(ResponseDto.of(response, Result.ok()));
     }
+
 }
