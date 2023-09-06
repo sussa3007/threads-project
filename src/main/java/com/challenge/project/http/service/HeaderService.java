@@ -24,10 +24,15 @@ public class HeaderService {
         httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded; charset=UTF-8");
     }
 
-    public void setThreadsRequestDefaultHeader(HttpPost httpPost, String token) {
+    public void setThreadsRequestDefaultHeader(HttpPost httpPost, String token, String authToken) {
         httpPost.setHeader(HttpHeaders.USER_AGENT, "threads-client");
         httpPost.setHeader("x-ig-app-id", ThreadsRequestProperty.X_IG_APP_ID.getProperty());
+        httpPost.setHeader("Origin", "https://www.threads.net");
+        httpPost.setHeader("Referer", "https://www.threads.net");
         httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        if (authToken != null) {
+            httpPost.setHeader(HttpHeaders.AUTHORIZATION, authToken);
+        }
         httpPost.setHeader("x-fb-lsd", token);
     }
 
