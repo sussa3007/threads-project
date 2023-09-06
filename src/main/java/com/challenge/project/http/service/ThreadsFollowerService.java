@@ -13,7 +13,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +55,7 @@ public class ThreadsFollowerService {
             }
             headerService.setThreadsFollowerRequestHeader(httpGet, tokenDto.getToken());
             log.info("Executing request InstagramAPI = {} ", httpGet.getRequestLine());
-            String execute = (String) httpclient.execute(httpGet, handler.getThreadsFollowerHandler());
+            String execute = (String) httpclient.execute(httpGet, handler.getDefaultStringHandler());
             ThreadsFollowersResponseDto threadsFollowersResponseDto = mapper.readValue(execute, ThreadsFollowersResponseDto.class);
             if (execute.contains("next_max_id")) {
                 log.info("Followers Request Status = {}",threadsFollowersResponseDto.getStatus());
