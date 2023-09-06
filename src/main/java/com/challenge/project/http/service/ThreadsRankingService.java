@@ -51,6 +51,8 @@ public class ThreadsRankingService {
 
     private final HeaderService headerService;
 
+    private final InstagramLoginService loginService;
+
     @Value("${RAPID_API_KEY}")
     private String RAPID_API_KEY;
 
@@ -62,15 +64,34 @@ public class ThreadsRankingService {
     public List<String> getThreadsIdList(String username) throws IOException, InterruptedException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             String userId = findUserIdByUserName(username);
-            String token = getLsdToken();
-            HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
-            headerService.setThreadsRequestDefaultHeader(httpPost, token);
-            UrlEncodedFormEntity entity = getUrlEncodedBody("userID", userId, token, DocId.GET_PROFILE_POST.getId());
-            httpPost.setEntity(entity);
-            HttpClientPostDto execute = (HttpClientPostDto) httpclient.execute(httpPost, handler.getThreadsRankingResponseHandler());
-            log.info("Executing request = {} ", httpPost.getRequestLine());
-            return parsingThreadsIdList(execute);
+            try {
+                log.info("Call Get Threads Id List");
+                String token = getLsdToken();
+                HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
+                headerService.setThreadsRequestDefaultHeader(httpPost, token, null);
+                UrlEncodedFormEntity entity = getUrlEncodedBody("userID", userId, token, DocId.GET_PROFILE_POST.getId());
+                httpPost.setEntity(entity);
+                HttpClientPostDto execute = (HttpClientPostDto) httpclient.execute(httpPost, handler.getThreadsRankingResponseHandler());
+                log.info("Executing request = {} ", httpPost.getRequestLine());
+                return parsingThreadsIdList(execute);
+            } catch (Exception e) {
+                log.error("Default Threads Id Parser Error");
+                return getThreadsIdListByRapidApi(userId);
+            }
+        } catch (UnrecognizedPropertyException un) {
+            throw new ServiceLogicException(ErrorCode.NOT_FOUND);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 
+    public List<String> getThreadsIdListByRapidApi(String userId) throws IOException {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(ThreadsRequestProperty.THREADS_GET_URL_RAPID.getProperty()+userId);
+            headerService.setRapidApiDefaultHeader(httpGet, RAPID_API_KEY);
+            String  execute = (String) httpclient.execute(httpGet, handler.getDefaultStringHandler());
+            log.info("Executing request ThreadsId RapidApi = {} ", httpGet.getRequestLine());
+            return parsingThreadsIdListByRapidApi(execute);
         } catch (UnrecognizedPropertyException un) {
             throw new ServiceLogicException(ErrorCode.NOT_FOUND);
         } catch (Exception e) {
@@ -87,7 +108,7 @@ public class ThreadsRankingService {
             // 병렬 스트림 처리
             postList.stream().parallel().forEach( postId -> {
                 HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
-                headerService.setThreadsRequestDefaultHeader(httpPost, token);
+                headerService.setThreadsRequestDefaultHeader(httpPost, token, null);
                 UrlEncodedFormEntity entity = getUrlEncodedBody("postID", postId, token, DocId.GET_POST.getId());
                 httpPost.setEntity(entity);
                 HttpClientPostDto execute = null;
@@ -270,6 +291,17 @@ public class ThreadsRankingService {
         List<String> idList = new ArrayList<>();
         for (JsonElement id : array) {
             String findId = String.valueOf(id.getAsJsonObject().get("id")).replaceAll("\"", "");
+            idList.add(findId);
+        }
+        return idList;
+    }
+
+    private List<String> parsingThreadsIdListByRapidApi(String  execute) {
+        JsonElement el = JsonParser.parseString(execute);
+        JsonArray array = el.getAsJsonObject().get("threads").getAsJsonArray();
+        List<String> idList = new ArrayList<>();
+        for (JsonElement id : array) {
+            String findId = id.getAsJsonObject().get("node").getAsJsonObject().get("id").getAsString().replaceAll("\"", "");
             idList.add(findId);
         }
         return idList;
