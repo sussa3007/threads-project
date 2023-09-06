@@ -46,7 +46,7 @@ public class HttpResponseHandler {
         };
     }
 
-    public ResponseHandler<?> getThreadsFollowerHandler() {
+    public ResponseHandler<?> getDefaultStringHandler() {
         return response -> {
             int status = response.getStatusLine().getStatusCode();
             if (status >= 200 && status < 300) {
