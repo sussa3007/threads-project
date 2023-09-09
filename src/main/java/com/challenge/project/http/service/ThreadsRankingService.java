@@ -103,11 +103,11 @@ public class ThreadsRankingService {
     public List<FindUserDto> getReplyUser(List<String> postList, String username) throws IOException, InterruptedException {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             List<FindUserDto> userList = new ArrayList<>();
+            String token = getLsdToken();
             // 병렬 스트림 처리
             postList.stream().parallel().forEach(postId -> {
                 try {
                     log.info("Call Post Reply User List = {}", postId);
-                    String token = getLsdToken();
                     HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
                     headerService.setThreadsRequestDefaultHeader(httpPost, token, null);
                     UrlEncodedFormEntity entity = getUrlEncodedBody("postID", postId, token, DocId.GET_POST.getId());
@@ -117,8 +117,6 @@ public class ThreadsRankingService {
                     addUserAndParsingReplyUser(execute, username, userList);
                 } catch (IOException e) {
                     log.error("Error Not Found Post = {}", e.getMessage());
-                    throw new ServiceLogicException(ErrorCode.INTERNAL_SERVER_ERROR);
-                } catch (InterruptedException e) {
                     throw new ServiceLogicException(ErrorCode.INTERNAL_SERVER_ERROR);
                 }
             });
@@ -167,7 +165,6 @@ public class ThreadsRankingService {
                 String url = jsonElement.getAsJsonObject().get("post").getAsJsonObject().get("user").getAsJsonObject().get("profile_pic_url").getAsString();
                 if (!un.equals(username)) {
                     FindUserDto findUser = FindUserDto.of(un, url);
-
                     userList.add(findUser);
                 }
             }
