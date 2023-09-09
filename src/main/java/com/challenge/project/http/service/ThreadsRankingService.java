@@ -65,17 +65,18 @@ public class ThreadsRankingService {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             String userId = findUserIdByUserName(username);
             try {
-                log.info("Call Get Threads Id List");
+                log.info("Call Get Threads Id List(Default)");
                 String token = getLsdToken();
                 HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
                 headerService.setThreadsRequestDefaultHeader(httpPost, token, null);
                 UrlEncodedFormEntity entity = getUrlEncodedBody("userID", userId, token, DocId.GET_PROFILE_POST.getId());
                 httpPost.setEntity(entity);
-                HttpClientPostDto execute = (HttpClientPostDto) httpclient.execute(httpPost, handler.getThreadsRankingResponseHandler());
                 log.info("Executing request = {} ", httpPost.getRequestLine());
+                HttpClientPostDto execute = (HttpClientPostDto) httpclient.execute(httpPost, handler.getThreadsRankingResponseHandler());
                 return parsingThreadsIdList(execute);
             } catch (Exception e) {
                 log.error("Default Threads Id Parser Error");
+                log.info("Call Get Threads Id List(Rapid)");
                 return getThreadsIdListByRapidApi(userId);
             }
         } catch (UnrecognizedPropertyException un) {
@@ -89,8 +90,8 @@ public class ThreadsRankingService {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet(ThreadsRequestProperty.THREADS_GET_URL_RAPID.getProperty()+userId);
             headerService.setRapidApiDefaultHeader(httpGet, RAPID_API_KEY);
-            String  execute = (String) httpclient.execute(httpGet, handler.getDefaultStringHandler());
             log.info("Executing request ThreadsId RapidApi = {} ", httpGet.getRequestLine());
+            String  execute = (String) httpclient.execute(httpGet, handler.getDefaultStringHandler());
             return parsingThreadsIdListByRapidApi(execute);
         } catch (UnrecognizedPropertyException un) {
             throw new ServiceLogicException(ErrorCode.NOT_FOUND);
@@ -107,6 +108,7 @@ public class ThreadsRankingService {
             List<FindUserDto> userList = new ArrayList<>();
             // 병렬 스트림 처리
             postList.stream().parallel().forEach( postId -> {
+                log.info("Call Post Reply User List = {}", postId);
                 HttpPost httpPost = new HttpPost(ThreadsRequestProperty.BASE_URL.getProperty());
                 headerService.setThreadsRequestDefaultHeader(httpPost, token, null);
                 UrlEncodedFormEntity entity = getUrlEncodedBody("postID", postId, token, DocId.GET_POST.getId());
